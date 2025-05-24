@@ -75,7 +75,7 @@ const selectedTag = ref({
 
 const affixTags = ref([]);
 const left = ref(0);
-const right = ref(0);
+const top = ref(0);
 
 //右键菜单显示状态
 const contentMenuVisible = ref(false);
@@ -219,6 +219,13 @@ function filterAffixTags(routes, basePath = "/") {
 function initTags() {
     const tags = filterAffixTags(permissionStore.routes);
     affixTags.value = tags;
+}
+//判断选中标签是否为最后一个可见标签
+function isLastView() {
+    return (
+        selectedTag.value.fullPath ==
+        tagsViewStore.visitedViews[tagsViewStore.visitedViews.length - 1]?.fullPath
+    );
 }
 //组件挂载时初始化标签
 onMounted(() => {
