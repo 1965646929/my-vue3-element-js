@@ -1,6 +1,7 @@
 <template>
     <div class="dashboard-container">
         <!-- github 角标 -->
+        <github-corner class="github-corner" />
 
         <el-card shadow="never" class="mt-2">
             <el-row class="h-80px">
@@ -216,7 +217,7 @@
                     <template v-if="!visitStatsLoading">
                         <el-card shadow="never">
                             <template #header>
-                                <div class="felx-x-between">
+                                <div class="flex-x-between">
                                     <span class="text-gray">浏览量(PV)</span>
                                     <el-tag type="primary" size="small">日</el-tag>
                                 </div>
@@ -238,12 +239,12 @@
                                         </el-icon>
                                         {{ formatGrowthRate(visitStatsData.pvGrowthRate) }}
                                     </span>
-                                    <div class="i-svg:browser w-8 h-8"></div>
                                 </div>
-                                <div class="flex-between mt-2 text-sm text-gray">
-                                    <span>总浏览量</span>
-                                    <span>{{ visitStatsData.totalPvCount }}</span>
-                                </div>
+                                <div class="i-svg:browser w-8 h-8"></div>
+                            </div>
+                            <div class="flex-x-between mt-2 text-sm text-gray">
+                                <span>总浏览量</span>
+                                <span>{{ visitStatsData.totalPvCount }}</span>
                             </div>
                         </el-card>
                     </template>
@@ -268,7 +269,60 @@
                 </el-card>
             </el-col>
             <!--  最新动态-->
-            <el-col :xs="24" :span="8"></el-col>
+            <el-col :xs="24" :span="8">
+                <el-card>
+                    <template #header>
+                        <div class="flex-x-between">
+                            <span class="header-title">最新动态</span>
+                            <el-link
+                                type="primary"
+                                :underline="false"
+                                href="https://gitee.com/youlaiorg/vue3-element-admin/releases"
+                                target="_blank"
+                            ></el-link>
+                        </div>
+                    </template>
+                    <el-scrollbar height="400">
+                        <el-timeline class="p-3">
+                            <el-timeline-item
+                                v-for="(item, index) in vesionList"
+                                :key="index"
+                                :timestamp="item.date"
+                                placement="top"
+                                :color="index == 0 ? '#67C23A' : '#909399'"
+                                :hollow="index != 0"
+                                size="large"
+                            >
+                                <div class="version-item" :class="{ 'latest-item': index == 0 }">
+                                    <div>
+                                        <el-text tag="strong">{{ item.title }}</el-text>
+                                        <el-tag
+                                            v-if="item.tag"
+                                            :type="index == 0 ? 'success' : 'info'"
+                                            size="small"
+                                            >{{ item.tag }}
+                                        </el-tag>
+                                    </div>
+                                    <el-text class="version-content">{{ item.content }}</el-text>
+                                    <div v-if="item.link">
+                                        <el-link
+                                            :type="index == 0 ? 'primary' : 'info'"
+                                            :href="item.link"
+                                            target="_blank"
+                                            :underline="false"
+                                        >
+                                            详情
+                                            <el-icon class="link-icon">
+                                                <TopRight></TopRight
+                                            ></el-icon>
+                                        </el-link>
+                                    </div>
+                                </div>
+                            </el-timeline-item>
+                        </el-timeline>
+                    </el-scrollbar>
+                </el-card>
+            </el-col>
         </el-row>
     </div>
 </template>
@@ -302,6 +356,34 @@ const greetings = computed(() => {
         return "偷偷向银河要了一把碎星，只等你闭上眼睛撒入你的梦中，晚安🌛！";
     }
 });
+
+//当前通知公告列表
+const vesionList = ref([
+    {
+        id: "1",
+        title: "v2.4.0",
+        date: "2021-09-01 00:00:00",
+        content: "实现基础框架搭建，包含权限管理、路由系统等核心功能。",
+        link: "https://gitee.com/youlaiorg/vue3-element-admin/releases",
+        tag: "里程碑",
+    },
+    {
+        id: "2",
+        title: "v2.4.0",
+        date: "2021-09-01 00:00:00",
+        content: "实现基础框架搭建，包含权限管理、路由系统等核心功能。",
+        link: "https://gitee.com/youlaiorg/vue3-element-admin/releases",
+        tag: "里程碑",
+    },
+    {
+        id: "3",
+        title: "v2.4.0",
+        date: "2021-09-01 00:00:00",
+        content: "实现基础框架搭建，包含权限管理、路由系统等核心功能。",
+        link: "https://gitee.com/youlaiorg/vue3-element-admin/releases",
+        tag: "里程碑",
+    },
+]);
 
 // 访客统计数据加载状态
 const visitStatsLoading = ref(true);
@@ -408,6 +490,16 @@ const fetchVisitTrendData = () => {
         updateVisitTrendChartOptions(data);
     });
 };
+//获取访客统计数据
+const fetchVisitStatsData = () => {
+    LogAPI.getVisitStats()
+        .then(data => {
+            visitStatsData.value = data;
+        })
+        .finally(() => {
+            visitStatsLoading.value = false;
+        });
+};
 watch(
     () => visitTrendDateRange.value,
     newVal => {
@@ -418,8 +510,41 @@ watch(
         immediate: true,
     }
 );
+onMounted(() => {
+    fetchVisitStatsData();
+});
 </script>
 <style lang="scss" scoped>
 .dashboard-container {
+    position: relative;
+    padding: 24px;
+
+    .github-corner {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 1;
+        border: 0;
+    }
+    .version-item {
+        padding: 16px;
+        margin-bottom: 12px;
+        background: var(--el-fill-color-lighter);
+        border-radius: 8px;
+        transition: all 0.2;
+        &.last-item {
+            background: var(--el-color-primary-light-9);
+            border: 1px solid var(--el-color-primary-light-5);
+        }
+        &:hover {
+            transform: translateX(5px);
+        }
+        .version-content {
+            marging: bottom 12px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--el-text-color-secondary);
+        }
+    }
 }
 </style>
